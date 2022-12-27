@@ -2,6 +2,7 @@ version: '3'
 services:
   pgadmin4:
     image: dpage/pgadmin4
+    container_name: pgadmin_container
     ports: 
       - 80:80
     environment:
@@ -9,9 +10,10 @@ services:
       - PGADMIN_DEFAULT_PASSWORD=password
   postgis_db:
     image: postgis/postgis
+    container_name: postgis_container
     restart: always
     ports:
-    - 5432:5430
+    - 5432:5432
     environment:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=password
