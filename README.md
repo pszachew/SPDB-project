@@ -13,3 +13,7 @@ Activate your venv:\
 `source path_to_your_venv\bin\activate`\
 Install packages:\
 `pip install -r requirements.txt`
+## Run fastAPI server
+First you need to go to SPDB-project/app and then call:\
+`uvicorn main:app --reload`\
+API will be hosted on your localhost (default port 8000).
