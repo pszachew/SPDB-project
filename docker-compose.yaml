@@ -9,8 +9,8 @@ services:
       - PGADMIN_DEFAULT_EMAIL=admin@admin.com
       - PGADMIN_DEFAULT_PASSWORD=password
   postgis_db:
-    image: postgis/postgis
-    container_name: postgis_container
+    image: pgrouting/pgrouting
+    container_name: pgrouting_container
     restart: always
     ports:
     - 5432:5432
