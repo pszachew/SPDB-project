@@ -23,7 +23,9 @@ On Linux:\
 Install osm2pgsql with command:\
 `apt install osm2pgsql`\
 Then open terminal in spdb_init catalog and run:\
-`spdb_init.sh`
+`spdb_init.sh`\
+After loading data we can uninstall osm2pgsql:\
+
 ## Run fastAPI server
 First you need to go to SPDB-project/app and then call:\
 `uvicorn main:app --reload`\
