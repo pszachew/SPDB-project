@@ -17,7 +17,7 @@ Install packages:\
 Download data (mazowieckie-latest.osm.pbf) from https://download.geofabrik.de/europe/poland/mazowieckie.html \
 Put file to spdb_init/osm_data directory\
 On Windows:\
-Open command line in spdb_init folder and run:
+Open command line in spdb_init folder and run:\
 `spdb_init.bat`\
 On Linux:\
 Install osm2pgsql with command:\
