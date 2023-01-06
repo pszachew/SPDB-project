@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 
 Base = declarative_base()
 
-DATABASE_URI = 'postgresql://admin:password@localhost:5432/spdb'
+DATABASE_URI = 'postgresql://admin:password@postgis_db:5432/spdb'
 
 engine = create_engine(DATABASE_URI)
 

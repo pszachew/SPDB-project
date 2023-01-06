@@ -1,21 +1,44 @@
 version: '3'
 services:
+  web:
+    image: spdb-backend
+    build: ./app
+    container_name: spdb_backend_container
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./app:/app
+    ports: 
+      - 8000:8000
+    depends_on:
+      - postgis_db
   pgadmin4:
     image: dpage/pgadmin4
     container_name: pgadmin_container
-    ports: 
-      - 80:80
+    ports:
+      - 8001:80
     environment:
       - PGADMIN_DEFAULT_EMAIL=admin@admin.com
       - PGADMIN_DEFAULT_PASSWORD=password
+    depends_on:
+      - postgis_db
   postgis_db:
     image: pgrouting/pgrouting
     container_name: pgrouting_container
     restart: always
     ports:
     - 5432:5432
+    expose:
+    - 5432
     environment:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=spdb
+      - PGUSER=postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "postgres"]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s  
     volumes:
       - ./db_data:/var/lib/postgresql/data

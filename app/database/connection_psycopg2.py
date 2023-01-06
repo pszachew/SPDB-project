@@ -1,7 +1,7 @@
 import psycopg2
 
 conn = psycopg2.connect(
-    host="localhost",
+    host="postgis_db",
     database="spdb",
     user="admin",
     port=5432,
