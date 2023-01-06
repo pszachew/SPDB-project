@@ -11,6 +11,14 @@ services:
       - 8000:8000
     depends_on:
       - postgis_db
+  frontend:
+    image: spdb-frontend
+    build: ./frontend
+    container_name: spdb_frontend_container
+    volumes:
+      - ./frontend:/app
+    ports:
+      - 8080:8080
   pgadmin4:
     image: dpage/pgadmin4
     container_name: pgadmin_container
