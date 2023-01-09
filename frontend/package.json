@@ -16,6 +16,7 @@
     "@popperjs/core": "^2.11.6",
     "bootstrap": "^5.2.3",
     "core-js": "^3.8.3",
+    "leaflet-geosearch": "^3.7.0",
     "vue": "^3.2.13",
     "vuex": "^4.0.2"
   },

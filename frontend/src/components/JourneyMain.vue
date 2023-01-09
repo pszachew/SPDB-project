@@ -32,6 +32,14 @@
 <script>
 import "leaflet/dist/leaflet.css";
 var L = require('leaflet');
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: require("leaflet/dist/images/marker-icon-2x.png"),
+  iconUrl: require("leaflet/dist/images/marker-icon.png"),
+  shadowUrl: require("leaflet/dist/images/marker-shadow.png")
+});
+import 'leaflet-geosearch/dist/geosearch.css';
+import { GeoSearchControl, OpenStreetMapProvider } from 'leaflet-geosearch'
 
 export default {
 	name: 'JourneyMain',
@@ -44,6 +52,12 @@ export default {
 		L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			maxZoom: 19,
 		}).addTo(map);
+		const search = new GeoSearchControl({
+			provider: new OpenStreetMapProvider(),
+			style: 'bar',
+		});
+
+		map.addControl(search);
     },
 }
 </script>
