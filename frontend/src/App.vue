@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import JourneyMain from './components/JourneyMain.vue'
+import JourneyMain from './components/journey/JourneyMain.vue'
 import LoadingSpinner from './components/LoadingSpinner.vue'
 
 export default {
