@@ -1,22 +1,24 @@
 <template>
-    <td>{{ place.address }}</td>
-    <td><Datepicker v-model="openningHours" range time-picker /></td>
-    <td><Datepicker v-model="visitingTime" time-picker /></td>
-    <td>
-        <div class="no-break" v-if="!accepted">
-            <button class="btn btn-outline-success mx-1" @click="acceptPlace()">
-                <font-awesome-icon icon="fa-solid fa-check"/>
-            </button>
-            <button class="btn btn-outline-danger mx-1" @click="removePlace()">
-                <font-awesome-icon icon="fa-solid fa-x"/>
-            </button>
-        </div>
-        <div v-else>
-            <button class="btn btn-danger mx-1" @click="removePlace()">
-                <font-awesome-icon icon="fa-solid fa-trash-can"/>
-            </button>
-        </div>
-    </td>
+    <tr ref="row" class="row-border" :class="{highlighted: place.highlighted}">
+        <td>{{ place.address }}</td>
+        <td><Datepicker v-model="openningHours" range time-picker /></td>
+        <td><Datepicker v-model="visitingTime" time-picker /></td>
+        <td>
+            <div class="no-break" v-if="!accepted">
+                <button class="btn btn-outline-success mx-1" @click="acceptPlace()">
+                    <font-awesome-icon icon="fa-solid fa-check"/>
+                </button>
+                <button class="btn btn-outline-danger mx-1" @click="removePlace()">
+                    <font-awesome-icon icon="fa-solid fa-x"/>
+                </button>
+            </div>
+            <div v-else>
+                <button class="btn btn-danger mx-1" @click="removePlace()">
+                    <font-awesome-icon icon="fa-solid fa-trash-can"/>
+                </button>
+            </div>
+        </td>
+    </tr>
 </template>
 <script>
 import { ref } from 'vue';
@@ -35,7 +37,7 @@ export default {
         Datepicker
     },
     props: [
-        "place"
+        "place",
     ],
     emits: ["placeAccepted", "placeRemoved"],
     setup() {
@@ -68,8 +70,14 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .no-break{
     white-space: nowrap
+}
+.row-border{
+    border-bottom: 2px solid v-bind('place.color')
+}
+.highlighted {
+    background-color: v-bind('place.color')
 }
 </style>
