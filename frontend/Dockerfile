@@ -6,7 +6,10 @@ ENV PATH /app/node_modules/.bin:$PATH
 
 RUN npm install @vue/cli@5.0.8 -g
 
-COPY . .
+COPY package.json .
 RUN npm install
+RUN mkdir -p /app/node_modules/.cache && chmod -R 777 /app/node_modules/.cache
+
+COPY . .
 
 CMD ["npm", "run", "serve"]
