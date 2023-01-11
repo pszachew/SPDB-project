@@ -1,5 +1,5 @@
 <template>
-    <tr ref="row" class="row-border" :class="{highlighted: place.highlighted}">
+    <tr class="row-border" :class="{highlighted: place.highlighted}">
         <td>{{ place.address }}</td>
         <td><Datepicker v-model="openningHours" range time-picker /></td>
         <td><Datepicker v-model="visitingTime" time-picker /></td>

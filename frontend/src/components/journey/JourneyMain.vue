@@ -107,7 +107,7 @@ export default {
 	name: 'JourneyMain',
 	components: {
 		JourneyRecord,
-        Datepicker
+        Datepicker,
 	},
     setup() {
         return {
@@ -202,7 +202,29 @@ export default {
 		handleTransportation(transportationType) {
 			this.transportationTypes[transportationType] = !this.transportationTypes[transportationType];
 		},
+		validateData() {
+			if (!this.startingPointMarker) {
+				this.$toast.error(`You have to choose starting point by clicking on the map!`);
+				return false
+			}
+			if (!this.chosenPlaces.length) {
+				this.$toast.error(`You have to choose at least one place!`);
+				return false
+			}
+			if (Object.values(this.transportationTypes).every(item => item === false)) {
+				this.$toast.error(`You have to choose at least one transportation type!`);
+				return false
+			}
+			if (this.chosenPlaces.filter(obj => obj.accepted).length === 0) {
+				this.$toast.error(`You have to choose at least one place!`);
+				return false
+			}
+			return true
+		},
 		calculateJourney() {
+			if (!this.validateData()) {
+				return
+			}
 			this.$store.commit('setIsLoading', true)
 			let placesData = []
 			this.chosenPlaces.forEach(place => {
