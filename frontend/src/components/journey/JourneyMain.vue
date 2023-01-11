@@ -48,15 +48,15 @@
 								<div class="row">
 									<div class="col-4">
 										<div class="row">
-											<button @click="handleTransportation('car')" class="btn mx-1 col-3" 
+											<button @click="handleTransportation('car')" class="btn mx-1 col-3"
 													:class="{'btn-outline-info': !transportationTypes.car, 'btn-info': transportationTypes.car}">
 												<font-awesome-icon icon="fa-solid fa-car" size="1x"/>
 											</button>
-											<button @click="handleTransportation('bike')" class="btn mx-1 col-3"
+											<button @click="handleTransportation('bike')" class="btn mx-1 col-3" disabled
 													:class="{'btn-outline-info': !transportationTypes.bike, 'btn-info': transportationTypes.bike}">
 												<font-awesome-icon icon="fa-solid fa-person-biking" size="1x"/>
 											</button>
-											<button @click="handleTransportation('foot')" class="btn mx-1 col-3"
+											<button @click="handleTransportation('foot')" class="btn mx-1 col-3" disabled
 													:class="{'btn-outline-info': !transportationTypes.foot, 'btn-info': transportationTypes.foot}">
 												<font-awesome-icon icon="fa-solid fa-person-walking" size="1x"/>
 											</button>
