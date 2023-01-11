@@ -39,7 +39,7 @@ export default {
     props: [
         "place",
     ],
-    emits: ["placeAccepted", "placeRemoved"],
+    emits: ["placeAccepted", "placeRemoved", "openingHoursChanged", "visitingTimeChanged"],
     setup() {
         const openningHours = ref([
             {hours: 8, minutes: 0},
@@ -52,15 +52,27 @@ export default {
             visitingTime
         }
     },
+    mounted() {
+        this.$emit("openingHoursChanged", this.place.id, this.openningHours)
+        this.$emit("visitingTimeChanged", this.place.id, this.visitingTime)
+    },
+    watch: {
+        openningHours() {
+            this.$emit("openingHoursChanged", this.place.id, this.openningHours)
+        },
+        visitingTime() {
+            this.$emit("visitingTimeChanged", this.place.id, this.visitingTime)
+        }
+    },
     methods: {
         acceptPlace() {
             this.accepted = true
-            this.$emit("placeAccepted", this.place.identifier)
+            this.$emit("placeAccepted", this.place.id)
         },
         removePlace() {
             this.accepted = false
-            this.$emit("placeRemoved", this.place.identifier)
-        },
+            this.$emit("placeRemoved", this.place.id)
+        }
     },
     data() {
         return {

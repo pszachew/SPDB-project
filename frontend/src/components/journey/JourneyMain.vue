@@ -29,7 +29,8 @@
 								</thead>
 								<tbody>
 									<JourneyRecord v-for="place of chosenPlaces" :key="place" :place="place"
-													@placeAccepted="onPlaceAccepted" @placeRemoved="onPlaceRemoved"/>
+													@placeAccepted="onPlaceAccepted" @placeRemoved="onPlaceRemoved"
+													@visitingTimeChanged="OnVisitingTimeChanged" @openingHoursChanged="OnOpeningHoursChanged" />
 								</tbody>
 								</table>
 								<div v-else>
@@ -38,6 +39,39 @@
 							</div>
 						</div>
 						<div class="row mt-auto">
+							<div class="col-12">
+								<div class="row">
+									<div class="col-4">Transportation methods</div>
+									<div class="col-4">Starting time</div>
+									<div class="col-4">Ending time</div>
+								</div>
+								<div class="row">
+									<div class="col-4">
+										<div class="row">
+											<button @click="handleTransportation('car')" class="btn mx-1 col-3" 
+													:class="{'btn-outline-info': !transportationTypes.car, 'btn-info': transportationTypes.car}">
+												<font-awesome-icon icon="fa-solid fa-car" size="1x"/>
+											</button>
+											<button @click="handleTransportation('bike')" class="btn mx-1 col-3"
+													:class="{'btn-outline-info': !transportationTypes.bike, 'btn-info': transportationTypes.bike}">
+												<font-awesome-icon icon="fa-solid fa-person-biking" size="1x"/>
+											</button>
+											<button @click="handleTransportation('foot')" class="btn mx-1 col-3"
+													:class="{'btn-outline-info': !transportationTypes.foot, 'btn-info': transportationTypes.foot}">
+												<font-awesome-icon icon="fa-solid fa-person-walking" size="1x"/>
+											</button>
+										</div>
+									</div>
+									<div class="col-4">
+										<Datepicker v-model="startingTime" />
+									</div>
+									<div class="col-4">
+										<Datepicker v-model="endingTime" />
+									</div>
+								</div>
+							</div>
+							<div class="m-1 px-0">
+							</div>
 							<button class="btn btn-primary" @click="calculateJourney">Generate journey</button>
 						</div>
 					</div>
@@ -48,11 +82,21 @@
 </template>
 
 <script>
+import { ref } from 'vue';
 import axios from 'axios';
 import "leaflet/dist/leaflet.css";
 var L = require('leaflet');
 import 'leaflet-geosearch/dist/geosearch.css';
 import { GeoSearchControl, OpenStreetMapProvider } from 'leaflet-geosearch'
+
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faCar, faPersonBiking, faPersonWalking } from '@fortawesome/free-solid-svg-icons'
+library.add(faCar)
+library.add(faPersonBiking)
+library.add(faPersonWalking)
+
+import '@vuepic/vue-datepicker/dist/main.css';
+import Datepicker from '@vuepic/vue-datepicker';
 
 import JourneyRecord from './JourneyRecord.vue'
 
@@ -63,7 +107,14 @@ export default {
 	name: 'JourneyMain',
 	components: {
 		JourneyRecord,
+        Datepicker
 	},
+    setup() {
+        return {
+            startingTime: ref(new Date()),
+            endingTime: ref(),
+        }
+    },
     mounted(){
 		this.map = L.map('map', {scrollWheelZoom: true});
 		this.map.setView([52.232, 21.028], 12);
@@ -108,19 +159,41 @@ export default {
 		return {
 			chosenPlaces: [],
 			placesCounter: 1,
+			transportationTypes: {
+				car: false,
+				bike: false,
+				foot: false,
+				// public: false,
+			},
+			startingPoint: {
+				lat: 52.232,
+				lng: 21.028,
+			}
 		}
 	},
 	methods: {
-		onPlaceAccepted(placeIdentifier) {
-			const index = this.chosenPlaces.map(e => e.identifier).indexOf(placeIdentifier);
+		onPlaceAccepted(placeId) {
+			const index = this.chosenPlaces.map(e => e.id).indexOf(placeId);
 			this.chosenPlaces[index].accepted = true;
 		},
-		onPlaceRemoved(placeIdentifier) {
-			const index = this.chosenPlaces.map(e => e.identifier).indexOf(placeIdentifier);
+		onPlaceRemoved(placeId) {
+			const index = this.chosenPlaces.map(e => e.id).indexOf(placeId);
 			this.map.removeLayer(this.chosenPlaces[index].marker);
 			this.chosenPlaces = this.chosenPlaces.filter(function( obj ) {
-				return obj.identifier !== placeIdentifier;
+				return obj.id !== placeId;
 			});
+		},
+		OnVisitingTimeChanged(placeId, date) {
+			const index = this.chosenPlaces.map(e => e.id).indexOf(placeId);
+			this.chosenPlaces[index].visitingTime = date;
+		},
+		OnOpeningHoursChanged(placeId, date) {
+			const index = this.chosenPlaces.map(e => e.id).indexOf(placeId);
+			this.chosenPlaces[index].openingTime = date[0];
+			this.chosenPlaces[index].closingTime = date[1];
+		},
+		handleTransportation(transportationType) {
+			this.transportationTypes[transportationType] = !this.transportationTypes[transportationType];
 		},
 		calculateJourney() {
 			this.$store.commit('setIsLoading', true)
@@ -130,8 +203,15 @@ export default {
 					placesData.push(place.getExportData())
 				}
 			})
+			let msg = {
+				"places": placesData,
+				"transportation_types": this.transportationTypes,
+				"starting_time": this.startingTime,
+				"ending_time": this.endingTime,
+				"startingPoint": this.startingPoint
+			}
 			axios.post(`/calculate-journey`, {
-				data: placesData
+				data: msg
 			}).then(response => {
 				console.log(response)
 			}).catch(e => {
@@ -139,7 +219,7 @@ export default {
 			}).finally(() => {
 				this.$store.commit('setIsLoading', false)
 			})
-		}
+		},
 	}
 }
 </script>
