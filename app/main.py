@@ -1,8 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from database.connection import engine, Session
 from database.connection_psycopg2 import conn
-import models
+
 
 cursor = conn.cursor()
 
@@ -16,15 +15,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-models.Base.metadata.create_all(bind=engine)
-
-local_session = Session()
-
 @app.get('/')
 def root():
-    cursor.execute("SELECT * FROM geometries;")
-    return cursor.fetchall()
+    cursor.execute("SELECT * FROM planet_osm_line;")
+    return cursor.fetchmany(5)
 
 
 @app.post('/calculate-journey')
