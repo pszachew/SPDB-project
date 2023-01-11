@@ -63,10 +63,10 @@
 										</div>
 									</div>
 									<div class="col-4">
-										<Datepicker v-model="startingTime" />
+										<Datepicker v-model="startingTime" time-picker />
 									</div>
 									<div class="col-4">
-										<Datepicker v-model="endingTime" />
+										<Datepicker v-model="endingTime" time-picker />
 									</div>
 								</div>
 							</div>
@@ -111,7 +111,7 @@ export default {
 	},
     setup() {
         return {
-            startingTime: ref(new Date()),
+            startingTime: ref({hours: 8, minutes: 0}),
             endingTime: ref(),
         }
     },
@@ -234,10 +234,10 @@ export default {
 			})
 			let msg = {
 				"places": placesData,
-				"transportation_types": this.transportationTypes,
-				"starting_time": this.startingTime,
-				"ending_time": this.endingTime,
-				"starting_point": this.startingPointMarker.marker.getLatLng(),
+				"transportationTypes": this.transportationTypes,
+				"startingTime": this.startingTime,
+				"endingTime": this.endingTime,
+				"startingPoint": this.startingPointMarker.marker.getLatLng(),
 			}
 			axios.post(`/calculate-journey`, msg).then(response => {
 				console.log(response)

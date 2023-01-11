@@ -34,13 +34,14 @@ async def calculate_journey(request: Request):
     #             'address': 'Polska'
     #         }, ...
     #     ],
-    #     'transportation_types': {
+    #     'transportationTypes': {
     #         'car': True,
     #         'bike': False,
     #         'foot': False
     #     },
-    #     'starting_time': '2023-01-11T20:58:56.067Z',
-    #     'starting_point': {'lat': 52.21436403584128, 'lng': 21.077957153320312}
+    #     'startingTime': {'hours': 8, 'minutes': 0},
+    #     'endingTime': {'hours': 8, 'minutes': 0} or None,
+    #     'startingPoint': {'lat': 52.21436403584128, 'lng': 21.077957153320312}
     # }
     data = await request.json()
     print(data)
