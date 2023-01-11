@@ -23,6 +23,25 @@ def root():
 
 @app.post('/calculate-journey')
 async def calculate_journey(request: Request):
+    # sample_data = {
+    #     'places': [
+    #         {
+    #             'lat': 52.215933,
+    #             'lng': 19.134422,
+    #             'openingTime': {'hours': 8, 'minutes': 0},
+    #             'closingTime': {'hours': 20, 'minutes': 0},
+    #             'visitingTime': {'hours': 2, 'minutes': 0, 'seconds': 0},
+    #             'address': 'Polska'
+    #         }, ...
+    #     ],
+    #     'transportation_types': {
+    #         'car': True,
+    #         'bike': False,
+    #         'foot': False
+    #     },
+    #     'starting_time': '2023-01-11T20:58:56.067Z',
+    #     'starting_point': {'lat': 52.21436403584128, 'lng': 21.077957153320312}
+    # }
     data = await request.json()
     print(data)
     return {"test": "Hello World"}

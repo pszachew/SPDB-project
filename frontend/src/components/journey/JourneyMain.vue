@@ -118,6 +118,16 @@ export default {
     mounted(){
 		this.map = L.map('map', {scrollWheelZoom: true});
 		this.map.setView([52.232, 21.028], 12);
+		this.map.on("click", (event) => {
+			if (!this.startingPointMarker){
+				this.startingPointMarker = new CustomMarker(event.latlng.lat, event.latlng.lng, 'Starting point');
+				this.startingPointMarker.marker.on("mouseover", () => this.startingPointMarker.marker.openPopup())
+				this.startingPointMarker.marker.on("mouseout", () => this.startingPointMarker.marker.closePopup())
+				this.startingPointMarker.marker.addTo(this.map);
+			} else {
+				this.startingPointMarker.marker.setLatLng(event.latlng);
+			}
+		})
 		L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 			maxZoom: 19,
 		}).addTo(this.map);
@@ -165,10 +175,7 @@ export default {
 				foot: false,
 				// public: false,
 			},
-			startingPoint: {
-				lat: 52.232,
-				lng: 21.028,
-			}
+			startingPointMarker: null,
 		}
 	},
 	methods: {
@@ -208,11 +215,9 @@ export default {
 				"transportation_types": this.transportationTypes,
 				"starting_time": this.startingTime,
 				"ending_time": this.endingTime,
-				"startingPoint": this.startingPoint
+				"starting_point": this.startingPointMarker.marker.getLatLng(),
 			}
-			axios.post(`/calculate-journey`, {
-				data: msg
-			}).then(response => {
+			axios.post(`/calculate-journey`, msg).then(response => {
 				console.log(response)
 			}).catch(e => {
 				console.error(e)
