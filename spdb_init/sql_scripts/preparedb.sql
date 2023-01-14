@@ -1,6 +1,6 @@
 -- prepare database
 
--- coordinates: long_W = 20.5321 , long_N = 52.3945, lat_E = 21.6101 , lat_S = 52.0233
+-- coordinates: long_W = 20.5321 , lat_N = 52.3945, long_E = 21.6101 , lat_S = 52.0233
 -- extract rectangle which contains Warsaw
 
 -- temporary table with warsaw coords
@@ -126,3 +126,34 @@ or ST_Intersects(wp.polygon, t1.line_gcord);
 
 update tb_line
 set line_centroid=ST_Centroid(line_gcord);
+
+
+-- FUNCTIONS
+
+CREATE OR REPLACE FUNCTION closest_points(long FLOAT8, lat FLOAT8) 
+    RETURNS TABLE (
+		vid BIGINT
+) 
+AS $$
+BEGIN
+    RETURN QUERY SELECT
+		tab.id
+    FROM
+		(
+			SELECT
+		 		ST_Distance(
+					t1.the_geom, 
+					ST_SetSRID(ST_MakePoint(long, lat), 4326))
+					as distance,
+				t1.id
+		 	FROM tb_roads_noded_vertices_pgr t1
+			ORDER BY distance
+			LIMIT 10
+		 ) as tab
+	;
+END; $$ 
+LANGUAGE 'plpgsql';
+
+-- example USAGE
+-- select * from closest_points(21.03395661433369, 52.192651949999994)
+

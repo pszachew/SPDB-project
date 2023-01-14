@@ -1,7 +1,9 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from database.connection_psycopg2 import conn
+import json
 
+import pathfinder as pf
 
 cursor = conn.cursor()
 
@@ -19,7 +21,7 @@ app.add_middleware(
 def root():
     cursor.execute("SELECT * FROM planet_osm_line;")
     return cursor.fetchmany(5)
-
+    # return {"test": "Root Page"}
 
 @app.post('/calculate-journey')
 async def calculate_journey(request: Request):
@@ -45,4 +47,14 @@ async def calculate_journey(request: Request):
     # }
     data = await request.json()
     print(data)
+
+    places = data["places"]
+    transport = data["transportationTypes"]
+    starting_time = data["startingTime"]
+    starting_point = data["startingPoint"]
+
+    pf.find_path(cursor, starting_point, places, starting_time, transport)
+
+    print(type(cursor))
+
     return {"test": "Hello World"}
