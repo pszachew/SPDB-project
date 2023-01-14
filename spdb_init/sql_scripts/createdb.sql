@@ -15,3 +15,4 @@ CREATE DATABASE spdb
 \connect spdb;
 
 CREATE EXTENSION postgis;
+CREATE EXTENSION pgrouting;
