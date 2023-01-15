@@ -20,3 +20,17 @@ class DbAccess:
         # seq | path_seq | node | edge | cost | agg_cost
         DbAccess.cursor.execute("SELECT * FROM pgr_dijkstra('SELECT id, source, target, distance as cost FROM tb_roads_noded', {source_id}, {target_id}, false)".format(source_id=source, target_id=target))
         return DbAccess.cursor.fetchall()
+
+    @staticmethod
+    def get_path(nodes):
+        where_condition = "in ("
+        for i in range(len(nodes)):
+            where_condition += str(nodes[i])
+            if i != len(nodes)-1:
+                where_condition += ","
+            else:
+                where_condition += ")"
+        DbAccess.cursor.execute(
+            "select id, st_asgeojson(the_geom) from tb_roads_noded_vertices_pgr where id {cond}"
+            .format(cond=where_condition))
+        return DbAccess.cursor.fetchall()

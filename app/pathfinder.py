@@ -35,12 +35,16 @@ def find_path(cursor, starting_point, places, starting_time,  transport):
     # print(costs)
     # _find_best_path(points, costs)
     # BestPathEvolutionAlgorithm(points, costs, crossing_prob = 0.5, mutation_prob = 0.5, pop_size = 10)
+    
     bpea = BestPathEvolutionAlgorithm(points, costs, 10, 0.5, 0.5, 5)
-    
     result = bpea.run()
-    
-    print(result)
+    best_order = [len(places)] + result[0]
+    print(f"best order : {best_order}")
 
+    shortest_path = _extract_path(paths, best_order)
+    print(shortest_path)
+    # print(result)
+    return shortest_path
 
 def _get_closest_point_ids(starting_point, places):
     points = [{'lat': place["lat"], 'lng': place["lng"]} for place in places] + [starting_point] # starting point push back, because it isnt used as variable in permutation
@@ -73,6 +77,28 @@ def _extract_costs(paths):
     costs = {(path[0][-1], path[-1][-1]): path[-1][5] for path in paths}
 
     return costs
+
+def _extract_path(paths, points_order):
+    pass
+    all_points_order = []
+    path = []
+
+    for point in points_order:
+        print(f"point {point}")
+        for i in range(len(paths[point])):
+            all_points_order.append((paths[point][i][2]))
+
+    cords = DbAccess.get_path(all_points_order)
+
+    print(cords)
+
+    for i in range(len(all_points_order)):
+        pass
+        cord = [x[1] for x in cords if x[0] == all_points_order[i] ]
+        # cord = next((x[1] for x in all_points_order if x[0] == all_points_order[i]), None)
+        path.append(cord)
+
+    return path
 
 
 class BestPathEvolutionAlgorithm:

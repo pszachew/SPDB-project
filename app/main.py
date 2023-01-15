@@ -53,8 +53,6 @@ async def calculate_journey(request: Request):
     starting_time = data["startingTime"]
     starting_point = data["startingPoint"]
 
-    pf.find_path(cursor, starting_point, places, starting_time, transport)
+    path = pf.find_path(cursor, starting_point, places, starting_time, transport)
 
-    print(type(cursor))
-
-    return {"test": "Hello World"}
+    return {"path": path}
