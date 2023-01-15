@@ -1,4 +1,5 @@
 import random
+import itertools
 from deap import base
 from deap import creator
 from deap import tools
@@ -20,19 +21,20 @@ def find_path(cursor, starting_point, places, starting_time,  transport):
     closest_points_ids = _get_closest_point_ids(starting_point, places) # ids of closest points in database, used in dijkstra algorithm
     # points_ids = {i: closest_points_ids[i] for i in range(len(closest_points_ids))} # own ids from 0 to 
 
+    print(closest_points_ids)
+
     paths = _get_paths(closest_points_ids)
     costs = _extract_costs(paths)
 
-    # print(closest_points_ids)
     # print(paths)
-    # print(costs)
+
     # all points
     points = {i: places[i] for i in range(len(closest_points_ids)-1)} | {len(closest_points_ids)-1: starting_point}
     
-    # print(paths)
-    # print(points)
+    # # print(paths)
+    # # print(points)
 
-    # print(costs)
+    # # print(costs)
     # _find_best_path(points, costs)
     # BestPathEvolutionAlgorithm(points, costs, crossing_prob = 0.5, mutation_prob = 0.5, pop_size = 10)
     
@@ -42,8 +44,7 @@ def find_path(cursor, starting_point, places, starting_time,  transport):
     print(f"best order : {best_order}")
 
     shortest_path = _extract_path(paths, best_order)
-    print(shortest_path)
-    # print(result)
+
     return shortest_path
 
 def _get_closest_point_ids(starting_point, places):
@@ -60,43 +61,68 @@ def _get_closest_point_ids(starting_point, places):
     return closest_pids
 
 def _get_paths(pids):
-    paths = []
+    paths = {}
 
     for s_orig, source in pids:
         for t_orig, target in [pid for pid in pids if pid != (s_orig, source)]:
             result = DbAccess.get_shortest_path(source, target)
-            result[0] = (*result[0], s_orig) # add original point ids
-            result[-1] = (*result[-1], t_orig)
-            paths.append(result)
+            # result[0] = (*result[0], s_orig) # add original point ids
+            # result[-1] = (*result[-1], t_orig)
+            # print(type(result[-1][5]))
+            paths[(s_orig, t_orig)] = result
     
     return paths
 
 def _extract_costs(paths):
-    # returns list of dictionaries 
-    # source target
-    costs = {(path[0][-1], path[-1][-1]): path[-1][5] for path in paths}
-
+    costs = {key: value[-1][5]  for key, value in paths.items()}
     return costs
 
-def _extract_path(paths, points_order):
+def _extract_path(all_paths, points_order):
     pass
-    all_points_order = []
+    all_points_order = {}
     path = []
+    paths = {}
+#  [(0, 29036), (1, 2007), (2, 16373), (3, 28725)]
+    points_paths = [all_paths[(points_order[i], points_order[i+1])] for i in range(len(points_order)-1)]
 
-    for point in points_order:
-        print(f"point {point}")
-        for i in range(len(paths[point])):
-            all_points_order.append((paths[point][i][2]))
+    print(points_paths)
+    i = 0
+    for p in points_paths:
+        all_points_order[i] = []
+        for j in range(len(p)):
+            all_points_order[i].append(p[j][2])
+        i +=1
 
-    cords = DbAccess.get_path(all_points_order)
+    points = list(itertools.chain.from_iterable(all_points_order.values()))
+    cords = DbAccess.get_path(points)
 
-    print(cords)
+    # print(all_points_order)
 
+# # # # # # # # # # # # # # # # # # # # # # # # 
+# do wybrania jedno
+    # specify nr of path
     for i in range(len(all_points_order)):
+        paths[i] = []
+        pts = all_points_order[i]
+        print(pts)
+        print("HAA")
+        for j in range(len(pts)):
+            cord = [x[1] for x in cords if x[0] == pts[j]]
+            paths[i].append(cord)
+
+    # without specifying nr of path
+    for i in range(len(points)):
         pass
-        cord = [x[1] for x in cords if x[0] == all_points_order[i] ]
+        cord = [x[1] for x in cords if x[0] == points[i] ]
         # cord = next((x[1] for x in all_points_order if x[0] == all_points_order[i]), None)
         path.append(cord)
+
+    print("without specifying nr of path")
+    print(path)
+# # # # # # # # # # # # # # # # # # # # # # # # 
+
+    # for i in range(len(points_paths)):
+        # paths[i] = path[]
 
     return path
 
