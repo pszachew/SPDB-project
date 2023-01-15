@@ -85,7 +85,7 @@
 import { ref } from 'vue';
 import axios from 'axios';
 import "leaflet/dist/leaflet.css";
-var L = require('leaflet');
+import L from "leaflet";
 import 'leaflet-geosearch/dist/geosearch.css';
 import { GeoSearchControl, OpenStreetMapProvider } from 'leaflet-geosearch'
 
@@ -240,13 +240,35 @@ export default {
 				"startingPoint": this.startingPointMarker.marker.getLatLng(),
 			}
 			axios.post(`/calculate-journey`, msg).then(response => {
-				console.log(response)
+				let path = response.data.path;
+
+				let routeData = path.map(point => {
+					let pointData = JSON.parse(point[0]).coordinates;
+					return [pointData[0], pointData[1]]
+				})
+				this.printRoute(routeData, 2, null);
 			}).catch(e => {
 				console.error(e)
 			}).finally(() => {
 				this.$store.commit('setIsLoading', false)
 			})
 		},
+		printRoute(points, index, mapRoute) {
+			if (mapRoute !== null) {
+				this.map.removeLayer(mapRoute);
+			}
+			let data = {
+				"type": "MultiLineString",
+				"coordinates": [
+				points.slice(0, index + 1),
+				],
+			}
+			mapRoute = new L.GeoJSON(data);
+			mapRoute.addTo(this.map);
+			if (index <= points.length) {
+				setTimeout(() => this.printRoute(points, index + 1, mapRoute), 50);
+			}
+		}
 	}
 }
 </script>
