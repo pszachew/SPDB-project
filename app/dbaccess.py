@@ -7,12 +7,14 @@ class DbAccess:
     def __init__(self, cur) -> None:
         pass
 
+    @staticmethod
     def get_closest_point(long: float, lat: float):
         # returns table
         # id
         DbAccess.cursor.execute("SELECT * FROM closest_points({long}, {lat})".format(long=long, lat=lat))
         return DbAccess.cursor.fetchone()
 
+    @staticmethod
     def get_shortest_path(source, target):
         # returns table
         # seq | path_seq | node | edge | cost | agg_cost
