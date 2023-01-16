@@ -22,8 +22,8 @@
 								<thead>
 									<tr>
 										<th scope="col">Address</th>
-										<th scope="col">Openning hours</th>
-										<th scope="col">Visiting time</th>
+										<!-- <th scope="col">Openning hours</th>
+										<th scope="col">Visiting time</th> -->
 										<th scope="col"></th>
 									</tr>
 								</thead>
@@ -42,8 +42,8 @@
 							<div class="col-12">
 								<div class="row">
 									<div class="col-4">Transportation methods</div>
-									<div class="col-4">Starting time</div>
-									<div class="col-4">Ending time</div>
+									<!-- <div class="col-4">Starting time</div>
+									<div class="col-4">Ending time</div> -->
 								</div>
 								<div class="row">
 									<div class="col-4">
@@ -63,10 +63,10 @@
 										</div>
 									</div>
 									<div class="col-4">
-										<Datepicker v-model="startingTime" time-picker />
+										<!-- <Datepicker v-model="startingTime" time-picker /> -->
 									</div>
 									<div class="col-4">
-										<Datepicker v-model="endingTime" time-picker />
+										<!-- <Datepicker v-model="endingTime" time-picker /> -->
 									</div>
 								</div>
 							</div>
@@ -105,6 +105,7 @@ export default {
 	name: 'JourneyMain',
 	components: {
 		JourneyRecord,
+		// eslint-disable-next-line
         Datepicker,
 	},
     setup() {
@@ -172,7 +173,7 @@ export default {
 			chosenPlaces: [],
 			placesCounter: 1,
 			transportationTypes: {
-				car: false,
+				car: true,
 				bike: false,
 				foot: false,
 				// public: false,

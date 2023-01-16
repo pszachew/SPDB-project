@@ -1,8 +1,8 @@
 <template>
     <tr class="row-border" :class="{highlighted: place.highlighted}">
         <td>{{ place.address }}</td>
-        <td><Datepicker v-model="openningHours" range time-picker :disabled="calculated" /></td>
-        <td><Datepicker v-model="visitingTime" time-picker :disabled="calculated" /></td>
+        <!-- <td><Datepicker v-model="openningHours" range time-picker :disabled="calculated" /></td>
+        <td><Datepicker v-model="visitingTime" time-picker :disabled="calculated" /></td> -->
         <td>
             <div v-if="!calculated">
             <div class="no-break" v-if="!accepted">
@@ -36,6 +36,7 @@ library.add(faTrashCan)
 export default {
 	name: 'JourneyMain',
     components: {
+        // eslint-disable-next-line
         Datepicker
     },
     props: [
