@@ -21,7 +21,7 @@ def find_path(cursor, starting_point, places, starting_time,  transport):
     closest_points_ids = _get_closest_point_ids(starting_point, places) # ids of closest points in database, used in dijkstra algorithm
     # points_ids = {i: closest_points_ids[i] for i in range(len(closest_points_ids))} # own ids from 0 to 
 
-    print(closest_points_ids)
+    # print(closest_points_ids)
 
     paths = _get_paths(closest_points_ids)
     costs = _extract_costs(paths)
@@ -41,7 +41,7 @@ def find_path(cursor, starting_point, places, starting_time,  transport):
     bpea = BestPathEvolutionAlgorithm(points, costs, 10, 0.5, 0.5, 5)
     result = bpea.run()
     best_order = [len(places)] + result[0]
-    print(f"best order : {best_order}")
+    # print(f"best order : {best_order}")
 
     shortest_path = _extract_path(paths, best_order)
 
@@ -82,10 +82,9 @@ def _extract_path(all_paths, points_order):
     all_points_order = {}
     path = []
     paths = {}
-#  [(0, 29036), (1, 2007), (2, 16373), (3, 28725)]
+    
     points_paths = [all_paths[(points_order[i], points_order[i+1])] for i in range(len(points_order)-1)]
 
-    print(points_paths)
     i = 0
     for p in points_paths:
         all_points_order[i] = []
@@ -96,35 +95,15 @@ def _extract_path(all_paths, points_order):
     points = list(itertools.chain.from_iterable(all_points_order.values()))
     cords = DbAccess.get_path(points)
 
-    # print(all_points_order)
-
-# # # # # # # # # # # # # # # # # # # # # # # # 
-# do wybrania jedno
     # specify nr of path
     for i in range(len(all_points_order)):
         paths[i] = []
         pts = all_points_order[i]
-        print(pts)
-        print("HAA")
         for j in range(len(pts)):
             cord = [x[1] for x in cords if x[0] == pts[j]]
             paths[i].append(cord)
 
-    # without specifying nr of path
-    for i in range(len(points)):
-        pass
-        cord = [x[1] for x in cords if x[0] == points[i] ]
-        # cord = next((x[1] for x in all_points_order if x[0] == all_points_order[i]), None)
-        path.append(cord)
-
-    print("without specifying nr of path")
-    print(path)
-# # # # # # # # # # # # # # # # # # # # # # # # 
-
-    # for i in range(len(points_paths)):
-        # paths[i] = path[]
-
-    return path
+    return paths
 
 
 class BestPathEvolutionAlgorithm:
