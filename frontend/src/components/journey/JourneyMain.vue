@@ -22,13 +22,13 @@
 								<thead>
 									<tr>
 										<th scope="col">Address</th>
-										<th scope="col">Openning hours</th>
-										<th scope="col">Visiting time</th>
+										<!-- <th scope="col">Openning hours</th>
+										<th scope="col">Visiting time</th> -->
 										<th scope="col"></th>
 									</tr>
 								</thead>
 								<tbody>
-									<JourneyRecord v-for="place of chosenPlaces" :key="place" :place="place"
+									<JourneyRecord v-for="place of chosenPlaces" :key="place" :place="place" :calculated="calculated"
 													@placeAccepted="onPlaceAccepted" @placeRemoved="onPlaceRemoved"
 													@visitingTimeChanged="OnVisitingTimeChanged" @openingHoursChanged="OnOpeningHoursChanged" />
 								</tbody>
@@ -38,12 +38,12 @@
 								</div>
 							</div>
 						</div>
-						<div class="row mt-auto">
+						<div class="row mt-auto" v-if="!calculated">
 							<div class="col-12">
 								<div class="row">
 									<div class="col-4">Transportation methods</div>
-									<div class="col-4">Starting time</div>
-									<div class="col-4">Ending time</div>
+									<!-- <div class="col-4">Starting time</div>
+									<div class="col-4">Ending time</div> -->
 								</div>
 								<div class="row">
 									<div class="col-4">
@@ -63,16 +63,14 @@
 										</div>
 									</div>
 									<div class="col-4">
-										<Datepicker v-model="startingTime" time-picker />
+										<!-- <Datepicker v-model="startingTime" time-picker /> -->
 									</div>
 									<div class="col-4">
-										<Datepicker v-model="endingTime" time-picker />
+										<!-- <Datepicker v-model="endingTime" time-picker /> -->
 									</div>
 								</div>
 							</div>
-							<div class="m-1 px-0">
-							</div>
-							<button class="btn btn-primary" @click="calculateJourney">Generate journey</button>
+							<button class="btn btn-primary mt-1" @click="calculateJourney">Generate journey</button>
 						</div>
 					</div>
 				</div>
@@ -107,6 +105,7 @@ export default {
 	name: 'JourneyMain',
 	components: {
 		JourneyRecord,
+		// eslint-disable-next-line
         Datepicker,
 	},
     setup() {
@@ -119,6 +118,9 @@ export default {
 		this.map = L.map('map', {scrollWheelZoom: true});
 		this.map.setView([52.232, 21.028], 12);
 		this.map.on("click", (event) => {
+			if (this.calculated){
+				return
+			}
 			if (!this.startingPointMarker){
 				this.startingPointMarker = new CustomMarker(event.latlng.lat, event.latlng.lng, 'Starting point');
 				this.startingPointMarker.marker.on("mouseover", () => this.startingPointMarker.marker.openPopup())
@@ -140,20 +142,21 @@ export default {
 		});
 		this.map.addControl(search);
 		this.map.on('geosearch/showlocation', (event) => {
+			if (this.calculated){
+				return
+			}
 			for (const place of this.chosenPlaces) {
 				if (!place.accepted) 
-					this.map.removeLayer(place.marker);
+					this.map.removeLayer(place.marker.marker);
 			}
-			this.chosenPlaces = this.chosenPlaces.filter(function( obj ) {
-				return obj.accepted;
-			});
+			this.chosenPlaces = this.chosenPlaces.filter(obj => obj.accepted);
 			let marker = new CustomMarker(event.location.y, event.location.x, event.location.label);
 			let identifier = this.placesCounter;
 			this.chosenPlaces.push(new JourneyPlace(identifier, event.location.label,
 													event.location.y, event.location.x,
-													marker.marker, false, marker.color));
-			const index = this.chosenPlaces.map(e => e.identifier).indexOf(identifier);
-			this.chosenPlaces.at(index).marker.addTo(this.map);
+													marker, false, marker.color));
+			const index = this.chosenPlaces.findIndex(e => e.id === identifier);
+			this.chosenPlaces.at(index).marker.marker.addTo(this.map);
 			marker.marker.on("mouseover", () => {
 				this.chosenPlaces.at(index).highlighted = true
 				marker.marker.openPopup();
@@ -170,12 +173,13 @@ export default {
 			chosenPlaces: [],
 			placesCounter: 1,
 			transportationTypes: {
-				car: false,
+				car: true,
 				bike: false,
 				foot: false,
 				// public: false,
 			},
 			startingPointMarker: null,
+			calculated: false,
 		}
 	},
 	methods: {
@@ -185,7 +189,7 @@ export default {
 		},
 		onPlaceRemoved(placeId) {
 			const index = this.chosenPlaces.map(e => e.id).indexOf(placeId);
-			this.map.removeLayer(this.chosenPlaces[index].marker);
+			this.map.removeLayer(this.chosenPlaces[index].marker.marker);
 			this.chosenPlaces = this.chosenPlaces.filter(function( obj ) {
 				return obj.id !== placeId;
 			});
@@ -227,10 +231,11 @@ export default {
 			}
 			this.$store.commit('setIsLoading', true)
 			let placesData = []
-			this.chosenPlaces.forEach(place => {
+			this.chosenPlaces = this.chosenPlaces.filter(place => {
 				if (place.accepted) {
 					placesData.push(place.getExportData())
 				}
+				return place.accepted
 			})
 			let msg = {
 				"places": placesData,
@@ -240,34 +245,37 @@ export default {
 				"startingPoint": this.startingPointMarker.marker.getLatLng(),
 			}
 			axios.post(`/calculate-journey`, msg).then(response => {
-				let path = response.data.path;
-
-				let routeData = path.map(point => {
-					let pointData = JSON.parse(point[0]).coordinates;
-					return [pointData[0], pointData[1]]
+				let paths = Object.values(response.data.path);
+				let order = response.data.order.slice(1, response.data.order.length);
+				this.drawRoute(paths[0], this.startingPointMarker.color);
+				this.startingPointMarker.changeText(1);
+				paths.slice(1, paths.length).forEach((path, i) => {
+					this.chosenPlaces.at(order[i]).marker.changeText(i + 2);
+					this.drawRoute(path, this.chosenPlaces.at(order[i]).color);
 				})
-				this.printRoute(routeData, 2, null);
+				this.chosenPlaces.at(order.at(-1)).marker.changeText(order.length + 1);
+				this.calculated = true;
 			}).catch(e => {
 				console.error(e)
 			}).finally(() => {
 				this.$store.commit('setIsLoading', false)
 			})
 		},
-		printRoute(points, index, mapRoute) {
-			if (mapRoute !== null) {
-				this.map.removeLayer(mapRoute);
-			}
+		drawRoute(path, color) {
+			let routeData = path.map(point => {
+				let pointData = JSON.parse(point[0]).coordinates;
+				return [pointData[0], pointData[1]]
+			})
 			let data = {
 				"type": "MultiLineString",
-				"coordinates": [
-				points.slice(0, index + 1),
-				],
+				"coordinates": [routeData],
 			}
-			mapRoute = new L.GeoJSON(data);
+			let mapRoute = new L.GeoJSON(data, {
+				style: function () {
+					return {color: color};
+				},
+			});
 			mapRoute.addTo(this.map);
-			if (index <= points.length) {
-				setTimeout(() => this.printRoute(points, index + 1, mapRoute), 50);
-			}
 		}
 	}
 }

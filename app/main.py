@@ -46,13 +46,12 @@ async def calculate_journey(request: Request):
     #     'startingPoint': {'lat': 52.21436403584128, 'lng': 21.077957153320312}
     # }
     data = await request.json()
-    print(data)
 
     places = data["places"]
     transport = data["transportationTypes"]
     starting_time = data["startingTime"]
     starting_point = data["startingPoint"]
 
-    path = pf.find_path(cursor, starting_point, places, starting_time, transport)
+    points_order, path = pf.find_path(cursor, starting_point, places, starting_time, transport)
 
-    return {"path": path}
+    return {"path": path, "order": points_order}
