@@ -28,7 +28,7 @@
 									</tr>
 								</thead>
 								<tbody>
-									<JourneyRecord v-for="place of chosenPlaces" :key="place" :place="place"
+									<JourneyRecord v-for="place of chosenPlaces" :key="place" :place="place" :calculated="calculated"
 													@placeAccepted="onPlaceAccepted" @placeRemoved="onPlaceRemoved"
 													@visitingTimeChanged="OnVisitingTimeChanged" @openingHoursChanged="OnOpeningHoursChanged" />
 								</tbody>
@@ -38,7 +38,7 @@
 								</div>
 							</div>
 						</div>
-						<div class="row mt-auto">
+						<div class="row mt-auto" v-if="!calculated">
 							<div class="col-12">
 								<div class="row">
 									<div class="col-4">Transportation methods</div>
@@ -70,9 +70,7 @@
 									</div>
 								</div>
 							</div>
-							<div class="m-1 px-0">
-							</div>
-							<button class="btn btn-primary" @click="calculateJourney">Generate journey</button>
+							<button class="btn btn-primary mt-1" @click="calculateJourney">Generate journey</button>
 						</div>
 					</div>
 				</div>
@@ -119,6 +117,9 @@ export default {
 		this.map = L.map('map', {scrollWheelZoom: true});
 		this.map.setView([52.232, 21.028], 12);
 		this.map.on("click", (event) => {
+			if (this.calculated){
+				return
+			}
 			if (!this.startingPointMarker){
 				this.startingPointMarker = new CustomMarker(event.latlng.lat, event.latlng.lng, 'Starting point');
 				this.startingPointMarker.marker.on("mouseover", () => this.startingPointMarker.marker.openPopup())
@@ -140,20 +141,21 @@ export default {
 		});
 		this.map.addControl(search);
 		this.map.on('geosearch/showlocation', (event) => {
+			if (this.calculated){
+				return
+			}
 			for (const place of this.chosenPlaces) {
 				if (!place.accepted) 
-					this.map.removeLayer(place.marker);
+					this.map.removeLayer(place.marker.marker);
 			}
-			this.chosenPlaces = this.chosenPlaces.filter(function( obj ) {
-				return obj.accepted;
-			});
+			this.chosenPlaces = this.chosenPlaces.filter(obj => obj.accepted);
 			let marker = new CustomMarker(event.location.y, event.location.x, event.location.label);
 			let identifier = this.placesCounter;
 			this.chosenPlaces.push(new JourneyPlace(identifier, event.location.label,
 													event.location.y, event.location.x,
-													marker.marker, false, marker.color));
+													marker, false, marker.color));
 			const index = this.chosenPlaces.findIndex(e => e.id === identifier);
-			this.chosenPlaces.at(index).marker.addTo(this.map);
+			this.chosenPlaces.at(index).marker.marker.addTo(this.map);
 			marker.marker.on("mouseover", () => {
 				this.chosenPlaces.at(index).highlighted = true
 				marker.marker.openPopup();
@@ -176,6 +178,7 @@ export default {
 				// public: false,
 			},
 			startingPointMarker: null,
+			calculated: false,
 		}
 	},
 	methods: {
@@ -185,7 +188,7 @@ export default {
 		},
 		onPlaceRemoved(placeId) {
 			const index = this.chosenPlaces.map(e => e.id).indexOf(placeId);
-			this.map.removeLayer(this.chosenPlaces[index].marker);
+			this.map.removeLayer(this.chosenPlaces[index].marker.marker);
 			this.chosenPlaces = this.chosenPlaces.filter(function( obj ) {
 				return obj.id !== placeId;
 			});
@@ -227,10 +230,11 @@ export default {
 			}
 			this.$store.commit('setIsLoading', true)
 			let placesData = []
-			this.chosenPlaces.forEach(place => {
+			this.chosenPlaces = this.chosenPlaces.filter(place => {
 				if (place.accepted) {
 					placesData.push(place.getExportData())
 				}
+				return place.accepted
 			})
 			let msg = {
 				"places": placesData,
@@ -243,10 +247,13 @@ export default {
 				let paths = Object.values(response.data.path);
 				let order = response.data.order.slice(1, response.data.order.length);
 				this.drawRoute(paths[0], this.startingPointMarker.color);
+				this.startingPointMarker.changeText(1);
 				paths.slice(1, paths.length).forEach((path, i) => {
-					let place = this.chosenPlaces.find(obj => obj.id === order[i] + 1);
-					this.drawRoute(path, place.color);
+					this.chosenPlaces.at(order[i]).marker.changeText(i + 2);
+					this.drawRoute(path, this.chosenPlaces.at(order[i]).color);
 				})
+				this.chosenPlaces.at(order.at(-1)).marker.changeText(order.length + 1);
+				this.calculated = true;
 			}).catch(e => {
 				console.error(e)
 			}).finally(() => {
