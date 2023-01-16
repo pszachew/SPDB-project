@@ -45,7 +45,7 @@ def find_path(cursor, starting_point, places, starting_time,  transport):
 
     shortest_path = _extract_path(paths, best_order)
 
-    return shortest_path
+    return best_order, shortest_path
 
 def _get_closest_point_ids(starting_point, places):
     points = [{'lat': place["lat"], 'lng': place["lng"]} for place in places] + [starting_point] # starting point push back, because it isnt used as variable in permutation

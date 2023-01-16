@@ -152,7 +152,7 @@ export default {
 			this.chosenPlaces.push(new JourneyPlace(identifier, event.location.label,
 													event.location.y, event.location.x,
 													marker.marker, false, marker.color));
-			const index = this.chosenPlaces.map(e => e.identifier).indexOf(identifier);
+			const index = this.chosenPlaces.findIndex(e => e.id === identifier);
 			this.chosenPlaces.at(index).marker.addTo(this.map);
 			marker.marker.on("mouseover", () => {
 				this.chosenPlaces.at(index).highlighted = true
@@ -240,34 +240,34 @@ export default {
 				"startingPoint": this.startingPointMarker.marker.getLatLng(),
 			}
 			axios.post(`/calculate-journey`, msg).then(response => {
-				let path = response.data.path;
-
-				let routeData = path.map(point => {
-					let pointData = JSON.parse(point[0]).coordinates;
-					return [pointData[0], pointData[1]]
+				let paths = Object.values(response.data.path);
+				let order = response.data.order.slice(1, response.data.order.length);
+				this.drawRoute(paths[0], this.startingPointMarker.color);
+				paths.slice(1, paths.length).forEach((path, i) => {
+					let place = this.chosenPlaces.find(obj => obj.id === order[i] + 1);
+					this.drawRoute(path, place.color);
 				})
-				this.printRoute(routeData, 2, null);
 			}).catch(e => {
 				console.error(e)
 			}).finally(() => {
 				this.$store.commit('setIsLoading', false)
 			})
 		},
-		printRoute(points, index, mapRoute) {
-			if (mapRoute !== null) {
-				this.map.removeLayer(mapRoute);
-			}
+		drawRoute(path, color) {
+			let routeData = path.map(point => {
+				let pointData = JSON.parse(point[0]).coordinates;
+				return [pointData[0], pointData[1]]
+			})
 			let data = {
 				"type": "MultiLineString",
-				"coordinates": [
-				points.slice(0, index + 1),
-				],
+				"coordinates": [routeData],
 			}
-			mapRoute = new L.GeoJSON(data);
+			let mapRoute = new L.GeoJSON(data, {
+				style: function () {
+					return {color: color};
+				},
+			});
 			mapRoute.addTo(this.map);
-			if (index <= points.length) {
-				setTimeout(() => this.printRoute(points, index + 1, mapRoute), 50);
-			}
 		}
 	}
 }
