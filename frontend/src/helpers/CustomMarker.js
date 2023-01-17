@@ -33,7 +33,7 @@ export default class CustomMarker {
             border: 1px solid #FFFFFF`
         const textStyle = `
             position: relative;
-            left: -0.55rem;
+            left: -0.4rem;
             top: -2.5rem;
             text-align: center;
         `
